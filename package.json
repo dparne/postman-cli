@@ -21,6 +21,10 @@
   },
   "homepage": "https://github.com/dparne/postman-cli#readme",
   "devDependencies": {
+    "@types/newman": "^3.10.0",
     "typescript": "^3.1.6"
+  },
+  "dependencies": {
+    "newman": "^4.2.2"
   }
 }
