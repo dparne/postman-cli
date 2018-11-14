@@ -2,6 +2,7 @@
 
 import * as newman from 'newman';
 import * as readline from 'readline';
+import program from 'commander';
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -17,4 +18,10 @@ const askQuestion = (question: string) => {
     });
 };
 
-askQuestion('please enter your postman api key -> ');
+program
+    .version('0.1.0')
+    .action(() => {
+        console.log('hello');
+        process.exit(0);
+    })
+    .parse(process.argv);
