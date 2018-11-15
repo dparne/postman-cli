@@ -75,7 +75,9 @@ program
             });
             await createFile(environmentFileName, JSON.stringify(environmentResponse.data.environment));
 
-            await runNewman(require(`./${collectionFileName}`), require(`./${environmentFileName}`));
+            await runNewman(require(`${collectionFileName}`), require(`${environmentFileName}`));
+            await deleteFile(collectionFileName);
+            await deleteFile(environmentFileName);
 
             process.exit(0);
         } catch (error) {
