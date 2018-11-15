@@ -1,10 +1,14 @@
 {
   "name": "@dineshparne/postman-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A command line interface for downloading and running Postman collections",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "postman-cli": "index.js"
   },
   "repository": {
     "type": "git",
