@@ -8,6 +8,8 @@ import { runNewman } from './lib/newman';
 
 program
     .version('0.0.1')
+    .option('-c, --collection-uid [value]', 'Provide the collection uid')
+    .option('-e, --environment-uid [value]', 'Provide the environment uid')
     .action(async () => {
         try {
 
@@ -23,24 +25,30 @@ program
             /**
              * Get list of collections and download the one user selects
              */
-            let collectionsResponse: any = await axios.get('https://api.getpostman.com/collections', {
-                headers: {
-                    'X-Api-Key': postmanApiKey
-                }
-            });
-            let collections = collectionsResponse.data.collections.map((collection: any) => {
-                return { name: collection.name, value: collection.uid }
-            })
-            let collectionAnswer: any = await inquirer
-                .prompt([
-                    {
-                        type: 'list',
-                        name: 'collection',
-                        message: 'Pick the collection -> ',
-                        choices: collections
+            let collectionUid = program.collectionUid;
+            let environmentUid = program.environmentUid;
+            if (!collectionUid) {
+                console.log('Came in here');
+                let collectionsResponse: any = await axios.get('https://api.getpostman.com/collections', {
+                    headers: {
+                        'X-Api-Key': postmanApiKey
                     }
-                ]);
-            let collectionResponse: any = await axios.get(`https://api.getpostman.com/collections/${collectionAnswer.collection}`, {
+                });
+                let collections = collectionsResponse.data.collections.map((collection: any) => {
+                    return { name: collection.name, value: collection.uid }
+                });
+                let collectionAnswer: any = await inquirer
+                    .prompt([
+                        {
+                            type: 'list',
+                            name: 'collection',
+                            message: 'Pick the collection -> ',
+                            choices: collections
+                        }
+                    ]);
+                collectionUid = collectionAnswer.collection;
+            }
+            let collectionResponse: any = await axios.get(`https://api.getpostman.com/collections/${collectionUid}`, {
                 headers: {
                     'X-Api-Key': postmanApiKey
                 }
@@ -51,24 +59,27 @@ program
             /**
              * Get list of environments and download the one user selects
              */
-            let environmentsResponse: any = await axios.get('https://api.getpostman.com/environments', {
-                headers: {
-                    'X-Api-Key': postmanApiKey
-                }
-            });
-            let environments = environmentsResponse.data.environments.map((environment: any) => {
-                return { name: environment.name, value: environment.uid }
-            })
-            let environmentAnswer: any = await inquirer
-                .prompt([
-                    {
-                        type: 'list',
-                        name: 'environment',
-                        message: 'Pick the environment -> ',
-                        choices: environments
+            if (!environmentUid) {
+                let environmentsResponse: any = await axios.get('https://api.getpostman.com/environments', {
+                    headers: {
+                        'X-Api-Key': postmanApiKey
                     }
-                ]);
-            let environmentResponse: any = await axios.get(`https://api.getpostman.com/environments/${environmentAnswer.environment}`, {
+                });
+                let environments = environmentsResponse.data.environments.map((environment: any) => {
+                    return { name: environment.name, value: environment.uid }
+                })
+                let environmentAnswer: any = await inquirer
+                    .prompt([
+                        {
+                            type: 'list',
+                            name: 'environment',
+                            message: 'Pick the environment -> ',
+                            choices: environments
+                        }
+                    ]);
+                environmentUid = environmentAnswer.environment;
+            }
+            let environmentResponse: any = await axios.get(`https://api.getpostman.com/environments/${environmentUid}`, {
                 headers: {
                     'X-Api-Key': postmanApiKey
                 }
