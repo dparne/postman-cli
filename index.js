@@ -80,7 +80,9 @@ commander_1.default
             }
         });
         yield utils_1.createFile(environmentFileName, JSON.stringify(environmentResponse.data.environment));
-        yield newman_1.runNewman(require(`./${collectionFileName}`), require(`./${environmentFileName}`));
+        yield newman_1.runNewman(require(`${process.cwd()}/${collectionFileName}`), require(`${process.cwd()}/${environmentFileName}`));
+        yield utils_1.deleteFile(collectionFileName);
+        yield utils_1.deleteFile(environmentFileName);
         process.exit(0);
     }
     catch (error) {
