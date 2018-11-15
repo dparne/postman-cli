@@ -1,5 +1,5 @@
 {
-  "name": "postman-cli",
+  "name": "@osdp/postman-cli",
   "version": "1.0.0",
   "description": "A command line interface for downloading and running Postman collections",
   "main": "index.js",
