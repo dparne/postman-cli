@@ -28,7 +28,6 @@ program
             let collectionUid = program.collectionUid;
             let environmentUid = program.environmentUid;
             if (!collectionUid) {
-                console.log('Came in here');
                 let collectionsResponse: any = await axios.get('https://api.getpostman.com/collections', {
                     headers: {
                         'X-Api-Key': postmanApiKey
