@@ -1,6 +1,6 @@
 {
   "name": "@dineshparne/postman-cli",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A command line interface for downloading and running Postman collections",
   "main": "index.js",
   "scripts": {

@@ -7,7 +7,8 @@ import { askQuestion, deleteFile, createFile, createRandomId } from './lib/utils
 import { runNewman } from './lib/newman';
 
 program
-    .version('0.0.1')
+    .version('1.0.5')
+    .option('-a, --all', 'Run all')
     .option('-c, --collection-uid [value]', 'Provide the collection uid')
     .option('-e, --environment-uid [value]', 'Provide the environment uid')
     .action(async () => {
@@ -27,67 +28,106 @@ program
              */
             let collectionUid = program.collectionUid;
             let environmentUid = program.environmentUid;
-            if (!collectionUid) {
+            let runAll = program.all;
+
+            if (runAll) {
                 let collectionsResponse: any = await axios.get('https://api.getpostman.com/collections', {
                     headers: {
                         'X-Api-Key': postmanApiKey
                     }
                 });
-                let collections = collectionsResponse.data.collections.map((collection: any) => {
-                    return { name: collection.name, value: collection.uid }
-                });
-                let collectionAnswer: any = await inquirer
-                    .prompt([
-                        {
-                            type: 'list',
-                            name: 'collection',
-                            message: 'Pick the collection -> ',
-                            choices: collections
-                        }
-                    ]);
-                collectionUid = collectionAnswer.collection;
-            }
-            let collectionResponse: any = await axios.get(`https://api.getpostman.com/collections/${collectionUid}`, {
-                headers: {
-                    'X-Api-Key': postmanApiKey
-                }
-            });
-            await createFile(collectionFileName, JSON.stringify(collectionResponse.data.collection));
-
-
-            /**
-             * Get list of environments and download the one user selects
-             */
-            if (!environmentUid) {
+                let collections = collectionsResponse.data.collections.map((collection: any) => collection.uid);
                 let environmentsResponse: any = await axios.get('https://api.getpostman.com/environments', {
                     headers: {
                         'X-Api-Key': postmanApiKey
                     }
                 });
-                let environments = environmentsResponse.data.environments.map((environment: any) => {
-                    return { name: environment.name, value: environment.uid }
-                })
-                let environmentAnswer: any = await inquirer
-                    .prompt([
-                        {
-                            type: 'list',
-                            name: 'environment',
-                            message: 'Pick the environment -> ',
-                            choices: environments
-                        }
-                    ]);
-                environmentUid = environmentAnswer.environment;
-            }
-            let environmentResponse: any = await axios.get(`https://api.getpostman.com/environments/${environmentUid}`, {
-                headers: {
-                    'X-Api-Key': postmanApiKey
-                }
-            });
-            await createFile(environmentFileName, JSON.stringify(environmentResponse.data.environment));
+                let environments = environmentsResponse.data.environments.map((environment: any) => environment.uid);
 
-            await runNewman(require(`${process.cwd()}/${collectionFileName}`), require(`${process.cwd()}/${environmentFileName}`));
-            await deleteFile(collectionFileName);
-            await deleteFile(environmentFileName);
+                for (let collection of collections) {
+                    const collectionFileName = `postman_temp${randomId}collection${collection}.json`;
+                    let collectionResponse: any = await axios.get(`https://api.getpostman.com/collections/${collection}`, {
+                        headers: {
+                            'X-Api-Key': postmanApiKey
+                        }
+                    });
+                    await createFile(collectionFileName, JSON.stringify(collectionResponse.data.collection));
+                    for (let environment of environments) {
+                        const environmentFileName = `postman_temp${randomId}environment${environment}.json`;
+                        let environmentResponse: any = await axios.get(`https://api.getpostman.com/environments/${environment}`, {
+                            headers: {
+                                'X-Api-Key': postmanApiKey
+                            }
+                        });
+                        await createFile(environmentFileName, JSON.stringify(environmentResponse.data.environment));
+                        await runNewman(require(`${process.cwd()}/${collectionFileName}`), require(`${process.cwd()}/${environmentFileName}`));
+                        await deleteFile(collectionFileName);
+                        await deleteFile(environmentFileName);
+                    }
+                }
+            } else {
+                if (!collectionUid) {
+                    let collectionsResponse: any = await axios.get('https://api.getpostman.com/collections', {
+                        headers: {
+                            'X-Api-Key': postmanApiKey
+                        }
+                    });
+                    let collections = collectionsResponse.data.collections.map((collection: any) => {
+                        return { name: collection.name, value: collection.uid }
+                    });
+                    let collectionAnswer: any = await inquirer
+                        .prompt([
+                            {
+                                type: 'list',
+                                name: 'collection',
+                                message: 'Pick the collection -> ',
+                                choices: collections
+                            }
+                        ]);
+                    collectionUid = collectionAnswer.collection;
+                }
+                let collectionResponse: any = await axios.get(`https://api.getpostman.com/collections/${collectionUid}`, {
+                    headers: {
+                        'X-Api-Key': postmanApiKey
+                    }
+                });
+                await createFile(collectionFileName, JSON.stringify(collectionResponse.data.collection));
+
+
+                /**
+                 * Get list of environments and download the one user selects
+                 */
+                if (!environmentUid) {
+                    let environmentsResponse: any = await axios.get('https://api.getpostman.com/environments', {
+                        headers: {
+                            'X-Api-Key': postmanApiKey
+                        }
+                    });
+                    let environments = environmentsResponse.data.environments.map((environment: any) => {
+                        return { name: environment.name, value: environment.uid }
+                    })
+                    let environmentAnswer: any = await inquirer
+                        .prompt([
+                            {
+                                type: 'list',
+                                name: 'environment',
+                                message: 'Pick the environment -> ',
+                                choices: environments
+                            }
+                        ]);
+                    environmentUid = environmentAnswer.environment;
+                }
+                let environmentResponse: any = await axios.get(`https://api.getpostman.com/environments/${environmentUid}`, {
+                    headers: {
+                        'X-Api-Key': postmanApiKey
+                    }
+                });
+                await createFile(environmentFileName, JSON.stringify(environmentResponse.data.environment));
+
+                await runNewman(require(`${process.cwd()}/${collectionFileName}`), require(`${process.cwd()}/${environmentFileName}`));
+                await deleteFile(collectionFileName);
+                await deleteFile(environmentFileName);
+            }
 
             process.exit(0);
         } catch (error) {
